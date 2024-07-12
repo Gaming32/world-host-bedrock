@@ -16,11 +16,8 @@
   "icon": "assets/world_host_bedrock/icon.png",
   "environment": "client",
   "entrypoints": {
-    "client": [
-      "io.github.gaming32.worldhostbedrock.fabric.WorldHostBedrockFabric"
-    ],
     "worldhost": [
-      "io.github.gaming32.worldhostbedrock.BedrockPlugin"
+      "io.github.gaming32.worldhostbedrock.WorldHostBedrock"
     ]
   },
   "mixins": [
