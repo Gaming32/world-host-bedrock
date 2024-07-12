@@ -18,6 +18,9 @@
   "entrypoints": {
     "client": [
       "io.github.gaming32.worldhostbedrock.fabric.WorldHostBedrockFabric"
+    ],
+    "worldhost": [
+      "io.github.gaming32.worldhostbedrock.BedrockPlugin"
     ]
   },
   "mixins": [

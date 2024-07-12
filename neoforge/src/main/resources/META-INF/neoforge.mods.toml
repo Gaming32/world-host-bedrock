@@ -9,7 +9,7 @@ version = "$version"
 displayName = "World Host Bedrock"
 displayURL = "https://modrinth.com/mod/world-host-bedrock"
 updateJSONURL = "https://api.modrinth.com/updates/world-host-bedrock/forge_updates.json?neoforge=only"
-logoFile = "icon.png"
+logoFile = "assets/world_host_bedrock/icon.png"
 authors = "Gaming32"
 description = "Bedrock support for World Host"
 

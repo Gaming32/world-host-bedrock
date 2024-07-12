@@ -1,8 +1,17 @@
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
 val common by configurations.creating
+val shadowCommon by configurations.creating
 
 configurations {
+    val developmentFabric by getting
+
     compileClasspath.get().extendsFrom(common)
     runtimeClasspath.get().extendsFrom(common)
+    developmentFabric.extendsFrom(common)
 }
 
 dependencies {
@@ -12,14 +21,11 @@ dependencies {
     common(project(":common", configuration = "namedElements")) {
         isTransitive = false
     }
+    shadowCommon(project(":common", configuration = "transformProductionFabric")) {
+        isTransitive = false
+    }
 
     modImplementation(libs.viafabricplus)
-}
-
-loom.runs {
-    named("client") {
-        isIdeConfigGenerated = true
-    }
 }
 
 tasks.processResources {
@@ -31,7 +37,7 @@ tasks.processResources {
 }
 
 tasks.jar {
-    from(common.files.map { if (it.isDirectory) it else zipTree(it) })
+    from(shadowCommon.files.map { if (it.isDirectory) it else zipTree(it) })
     archiveClassifier = "dev"
 }
 

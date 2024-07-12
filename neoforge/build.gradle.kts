@@ -1,8 +1,17 @@
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
 val common by configurations.creating
+val shadowCommon by configurations.creating
 
 configurations {
+    val developmentNeoForge by getting
+
     compileClasspath.get().extendsFrom(common)
     runtimeClasspath.get().extendsFrom(common)
+    developmentNeoForge.extendsFrom(common)
 }
 
 dependencies {
@@ -11,11 +20,8 @@ dependencies {
     common(project(":common", configuration = "namedElements")) {
         isTransitive = false
     }
-}
-
-loom.runs {
-    named("client") {
-        isIdeConfigGenerated = true
+    shadowCommon(project(":common", configuration = "transformProductionNeoForge")) {
+        isTransitive = false
     }
 }
 
@@ -28,7 +34,7 @@ tasks.processResources {
 }
 
 tasks.jar {
-    from(common.files.map { if (it.isDirectory) it else zipTree(it) })
+    from(shadowCommon.files.map { if (it.isDirectory) it else zipTree(it) })
     archiveClassifier = "dev"
 }
 

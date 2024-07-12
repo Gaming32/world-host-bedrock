@@ -2,6 +2,7 @@ import net.fabricmc.loom.api.LoomGradleExtensionAPI
 
 plugins {
     java
+    alias(libs.plugins.architectury.plugin) apply false
     alias(libs.plugins.architectury.loom) apply false
 //    alias(libs.plugins.minotaur) apply false // TODO: Publishing
 }
@@ -13,17 +14,22 @@ version = rootProject["mod_version"]
 
 allprojects {
     apply(plugin = "java")
+    apply(plugin = "architectury-plugin")
 
     base.archivesName = rootProject.name
     group = rootProject.group
 
     repositories {
         maven("https://oss.sonatype.org/content/repositories/snapshots")
+        maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+        maven("https://maven.isxander.dev/releases")
         maven("https://maven.lenni0451.net/everything")
         maven("https://api.modrinth.com/maven")
         maven("https://maven.neoforged.net/releases")
         maven("https://repo.opencollab.dev/main")
         maven("https://maven.parchmentmc.org")
+        maven("https://maven.quiltmc.org/repository/release/")
+        maven("https://maven.terraformersmc.com/releases")
         maven("https://repo.viaversion.com/everything")
 
         maven("https://jitpack.io")
@@ -74,6 +80,8 @@ subprojects {
         } else {
             modImplementation("maven.modrinth:world-host:$worldHostVersion")
         }
+        implementation("org.quiltmc.parsers:json:0.3.0")
+        implementation("org.semver4j:semver4j:5.3.0")
 
         implementation(libs.minecraftauth)
         include(libs.minecraftauth)
