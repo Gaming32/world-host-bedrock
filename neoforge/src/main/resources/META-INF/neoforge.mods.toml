@@ -1,0 +1,45 @@
+modLoader = "javafml"
+loaderVersion = "[3,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/Gaming32/world-host-bedrock/issues"
+
+[[mods]]
+modId = "world_host_bedrock"
+version = "$version"
+displayName = "World Host Bedrock"
+displayURL = "https://modrinth.com/mod/world-host-bedrock"
+updateJSONURL = "https://api.modrinth.com/updates/world-host-bedrock/forge_updates.json?neoforge=only"
+logoFile = "icon.png"
+authors = "Gaming32"
+description = "Bedrock support for World Host"
+
+[[mixins]]
+config = "world_host_bedrock.mixins.json"
+
+[[dependencies.world_host_bedrock]]
+modId = "neoforge"
+versionRange = "[21.0.86-beta,)"
+type = "required"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.world_host_bedrock]]
+modId = "minecraft"
+versionRange = "[1.21,)"
+type = "required"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.world_host_bedrock]]
+modId = "world_host"
+versionRange = "[0.4.14,)"
+type = "required"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.world_host_bedrock]]
+modId = "geyser_neoforge"
+versionRange = "[2.4.0-SNAPSHOT,)"
+type = "optional"
+ordering = "NONE"
+side = "BOTH"

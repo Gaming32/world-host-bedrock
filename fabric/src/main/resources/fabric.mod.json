@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "world_host_bedrock",
+  "name": "World Host Bedrock",
+  "version": "$version",
+  "description": "Bedrock support for World Host",
+  "authors": [
+    "Gaming32"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/world-host-bedrock",
+    "sources": "https://github.com/Gaming32/world-host-bedrock",
+    "issues": "https://github.com/Gaming32/world-host-bedrock/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/world_host_bedrock/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "io.github.gaming32.worldhostbedrock.fabric.WorldHostBedrockFabric"
+    ]
+  },
+  "mixins": [
+    "world_host_bedrock.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": ">=1.21",
+    "fabric-api": ">=0.100.1",
+    "world-host": ">=0.4.14"
+  },
+  "recommends": {
+    "viafabricplus": ">=3.4.2",
+    "geyser-fabric": ">=2.4.0-SNAPSHOT"
+  }
+}
