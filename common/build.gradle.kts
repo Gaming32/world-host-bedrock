@@ -4,4 +4,6 @@ architectury {
 
 dependencies {
     modImplementation(libs.fabric.loader)
+
+    modImplementation(libs.viafabricplus)
 }

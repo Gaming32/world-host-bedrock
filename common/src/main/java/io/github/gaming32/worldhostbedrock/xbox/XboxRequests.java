@@ -1,6 +1,7 @@
 package io.github.gaming32.worldhostbedrock.xbox;
 
 import com.google.gson.stream.JsonReader;
+import io.github.gaming32.worldhostbedrock.AuthenticationManager;
 import io.github.gaming32.worldhostbedrock.WHBPlatform;
 import io.github.gaming32.worldhostbedrock.WorldHostBedrock;
 import io.github.gaming32.worldhostbedrock.util.WHBConstants;
@@ -21,7 +22,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -46,73 +46,80 @@ public final class XboxRequests {
         .followRedirects(HttpClient.Redirect.ALWAYS)
         .executor(Util.ioPool())
         .build();
-    private String authentication;
+    private final AuthenticationManager authenticationManager;
 
-    public XboxRequests(String authentication) {
-        this.authentication = Objects.requireNonNull(authentication);
+    public XboxRequests(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
-    public void setAuthentication(String authentication) {
-        this.authentication = Objects.requireNonNull(authentication);
-    }
-
-    public CompletableFuture<List<Session>> requestSessions(XUID monikerXuid) {
-        final URI uri = buildUri("https://sessiondirectory.xboxlive.com/handles/query", builder -> builder
-            .addParameter("include", "customProperties")
-        );
-        final HttpRequest request = HttpRequest.newBuilder(uri)
-            .POST(HttpRequest.BodyPublishers.ofString(
-                SESSIONS_REQUEST.formatted(WHBConstants.MINECRAFT_SCID, monikerXuid)
-            ))
-            .header("User-Agent", USER_AGENT)
-            .header("Authorization", authentication)
-            .header("x-xbl-contract-version", "107")
-            .build();
-        return http.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
-            .thenApplyAsync(response -> {
-                if (response.statusCode() / 100 != 2) {
-                    throw new IllegalStateException("Failed to request " + uri.getPath() + ": " + response.statusCode());
-                }
-                try {
-                    return RequestParsers.parseSessions(new JsonReader(
-                        new InputStreamReader(response.body(), StandardCharsets.UTF_8)
-                    ));
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }, Util.ioPool());
+    public CompletableFuture<List<Session>> requestSessions() {
+        return authenticationManager.getAuthHeader().thenCompose(authentication -> {
+            if (authentication == null) {
+                return CompletableFuture.completedFuture(List.of());
+            }
+            final URI uri = buildUri("https://sessiondirectory.xboxlive.com", builder -> builder
+                .setPathSegments("handles", "query")
+                .addParameter("include", "customProperties")
+            );
+            final HttpRequest request = HttpRequest.newBuilder(uri)
+                .POST(HttpRequest.BodyPublishers.ofString(
+                    SESSIONS_REQUEST.formatted(WHBConstants.MINECRAFT_SCID, authenticationManager.getXuid())
+                ))
+                .header("User-Agent", USER_AGENT)
+                .header("Authorization", authentication)
+                .header("x-xbl-contract-version", "107")
+                .build();
+            return http.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+                .thenApplyAsync(response -> {
+                    if (response.statusCode() / 100 != 2) {
+                        throw new IllegalStateException("Failed to request " + uri + ": " + response.statusCode());
+                    }
+                    try {
+                        return RequestParsers.parseSessions(new JsonReader(
+                            new InputStreamReader(response.body(), StandardCharsets.UTF_8)
+                        ));
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }, Util.ioPool());
+        });
     }
 
     public CompletableFuture<ProfileUser> requestProfileUser(XUID xuid) {
-        final URI uri = buildUri("https://profile.xboxlive.com", builder -> builder
-            .setPathSegments("users", "xuid(" + xuid + ")", "profile", "settings")
-            .addParameter("settings", ProfileUser.DISPLAY_NAME_SETTING + "," + ProfileUser.PROFILE_PICTURE_SETTING)
-        );
-        final HttpRequest request = HttpRequest.newBuilder(uri)
-            .GET()
-            .header("User-Agent", USER_AGENT)
-            .header("Authorization", authentication)
-            .header("x-xbl-contract-version", "2")
-            .build();
-        return http.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
-            .thenApplyAsync(response -> {
-                if (response.statusCode() / 100 != 2) {
-                    throw new IllegalStateException("Failed to request " + uri.getPath() + ": " + response.statusCode());
-                }
-                try {
-                    return RequestParsers.parseProfileUsers(new JsonReader(
-                        new InputStreamReader(response.body(), StandardCharsets.UTF_8)
-                    ));
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }, Util.ioPool())
-            .thenApply(users -> users
-                .stream()
-                .filter(u -> u.id().equals(xuid))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("Didn't receive back profile info for " + xuid))
+        return authenticationManager.getAuthHeader().thenCompose(authentication -> {
+            if (authentication == null) {
+                return CompletableFuture.failedFuture(new IllegalStateException("Not authenticated to Xbox API"));
+            }
+            final URI uri = buildUri("https://profile.xboxlive.com", builder -> builder
+                .setPathSegments("users", "xuid(" + xuid + ")", "profile", "settings")
+                .addParameter("settings", ProfileUser.DISPLAY_NAME_SETTING + "," + ProfileUser.PROFILE_PICTURE_SETTING)
             );
+            final HttpRequest request = HttpRequest.newBuilder(uri)
+                .GET()
+                .header("User-Agent", USER_AGENT)
+                .header("Authorization", authentication)
+                .header("x-xbl-contract-version", "2")
+                .build();
+            return http.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+                .thenApplyAsync(response -> {
+                    if (response.statusCode() / 100 != 2) {
+                        throw new IllegalStateException("Failed to request " + uri.getPath() + ": " + response.statusCode());
+                    }
+                    try {
+                        return RequestParsers.parseProfileUsers(new JsonReader(
+                            new InputStreamReader(response.body(), StandardCharsets.UTF_8)
+                        ));
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }, Util.ioPool())
+                .thenApply(users -> users
+                    .stream()
+                    .filter(u -> u.id().equals(xuid))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("Didn't receive back profile info for " + xuid))
+                );
+        });
     }
 
     private static URI buildUri(String base, Consumer<URIBuilder> action) {

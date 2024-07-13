@@ -7,7 +7,6 @@ import io.github.gaming32.worldhost.WorldHost;
 import io.github.gaming32.worldhost.plugin.InfoTextsCategory;
 import io.github.gaming32.worldhost.plugin.OnlineFriend;
 import io.github.gaming32.worldhost.plugin.WorldHostPlugin;
-import io.github.gaming32.worldhostbedrock.util.XUID;
 import io.github.gaming32.worldhostbedrock.xbox.XboxRequests;
 import io.github.gaming32.worldhostbedrock.xbox.models.Session;
 import net.minecraft.ChatFormatting;
@@ -16,9 +15,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -28,8 +24,8 @@ public class WorldHostBedrock implements WorldHostPlugin {
     public static final String MOD_ID = "world_host_bedrock";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final boolean JAVA_CONNECTS_TO_BEDROCK = WHBPlatform.isModLoaded("viafabricplus");
-    public static final boolean BEDROCK_CONNECTS_TO_JAVA = WHBPlatform.isModLoaded(WHBPlatform.getGeyserModId());
+    public static final boolean VFP_INSTALLED = WHBPlatform.isModLoaded("viafabricplus");
+    public static final boolean GEYSER_INSTALLED = WHBPlatform.isModLoaded(WHBPlatform.getGeyserModId());
 
     private static final List<Component> BEDROCK_FRIENDS_TEXT = List.of(Component.translatable(
         "world_host_bedrock.friends.bedrock_notice",
@@ -40,39 +36,39 @@ public class WorldHostBedrock implements WorldHostPlugin {
         )
     ));
 
-    private static final XUID GAMING32I_XUID = XUID.parse("2535416896536191");
-
     private static WorldHostBedrock instance;
 
     private final Path cacheDir;
-    private final BedrockIconManager bedrockIconManager;
+    private final AuthenticationManager authenticationManager;
     private final XboxRequests xboxRequests;
+    private final BedrockIconManager bedrockIconManager;
 
     public WorldHostBedrock() {
         final Minecraft minecraft = Minecraft.getInstance();
         cacheDir = minecraft.gameDirectory.toPath().resolve("world_host_bedrock");
+        authenticationManager = new AuthenticationManager(cacheDir.resolve("auth.json"));
+        xboxRequests = new XboxRequests(authenticationManager);
         bedrockIconManager = new BedrockIconManager(cacheDir.resolve("icons"));
-        try {
-            xboxRequests = new XboxRequests(Files.readString(Path.of("../../authentication.txt")));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     public static WorldHostBedrock getInstance() {
         return instance;
     }
 
-    public BedrockIconManager getBedrockIconManager() {
-        return bedrockIconManager;
+    public Path getCacheDir() {
+        return cacheDir;
+    }
+
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
     }
 
     public XboxRequests getXboxRequests() {
         return xboxRequests;
     }
 
-    public Path getCacheDir() {
-        return cacheDir;
+    public BedrockIconManager getBedrockIconManager() {
+        return bedrockIconManager;
     }
 
     @Override
@@ -85,8 +81,12 @@ public class WorldHostBedrock implements WorldHostPlugin {
             .findAny()
             .orElseThrow();
 
-        LOGGER.info("Java can connect to Bedrock: {}", JAVA_CONNECTS_TO_BEDROCK);
-        LOGGER.info("Bedrock can connect to Java: {}", BEDROCK_CONNECTS_TO_JAVA);
+        authenticationManager.load();
+        authenticationManager.save();
+
+        LOGGER.info("Logged into Bedrock as {}", authenticationManager.getXuid());
+        LOGGER.info("Java can connect to Bedrock: {}", VFP_INSTALLED);
+        LOGGER.info("Bedrock can connect to Java: {}", GEYSER_INSTALLED);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
 
     @Override
     public void refreshFriendsList() {
-        xboxRequests.requestSessions(GAMING32I_XUID)
+        xboxRequests.requestSessions()
             .thenAcceptAsync(sessions -> {
                 for (final Session session : sessions) {
                     WorldHost.ONLINE_FRIENDS.put(session.ownerXuid().toUuid(), new BedrockOnlineFriend(session));
@@ -110,7 +110,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
                 }
             })
             .exceptionally(t -> {
-                LOGGER.error("Failed to request online friends", t);
+                LOGGER.error("Failed to request online Bedrock friends", t);
                 return null;
             });
     }
