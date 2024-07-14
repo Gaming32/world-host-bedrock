@@ -2,5 +2,8 @@
   "world_host_bedrock.friends.bedrock_notice": "Manage Bedrock friends on the %s.",
   "world_host_bedrock.friends.bedrock_notice.link": "Xbox website",
   "world_host_bedrock.status.logged_in": "Bedrock account: %s",
-  "world_host_bedrock.status.log_in": "Click to login to Bedrock"
+  "world_host_bedrock.status.log_in": "Click to login to Bedrock",
+  "world_host_bedrock.login.title": "Bedrock Edition Login",
+  "world_host_bedrock.login.message": "Your web browser should have opened with a sign in page. If it didn't, click \"Copy Link\" below and open the copied link in your web browser. It may take a few seconds for this screen to close after you have filled out the login page.",
+  "world_host_bedrock.login.copy_link": "Copy Link"
 }

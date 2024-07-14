@@ -68,9 +68,6 @@ public final class LoginScreen {
                 return;
             }
             minecraft.execute(() -> {
-                if (!cancelled.get()) {
-                    minecraft.setScreen(parentScreen);
-                }
                 final var newXbl = xbl.get();
                 final var newSession = fullSession.get();
                 if (newXbl != null && newSession != null) {
@@ -81,6 +78,9 @@ public final class LoginScreen {
                     if (WorldHostBedrock.VFP_INSTALLED) {
                         ViaFabricPlus.global().getSaveManager().getAccountsSave().setBedrockAccount(newSession);
                     }
+                }
+                if (!cancelled.get()) {
+                    minecraft.setScreen(parentScreen);
                 }
             });
         });
