@@ -1,6 +1,8 @@
 package io.github.gaming32.worldhostbedrock;
 
 import com.mojang.logging.LogUtils;
+import de.florianmichael.viafabricplus.ViaFabricPlus;
+import de.florianmichael.viafabricplus.save.impl.AccountsSave;
 import io.github.gaming32.worldhost.FriendsListUpdate;
 import io.github.gaming32.worldhost.LoadedWorldHostPlugin;
 import io.github.gaming32.worldhost.WorldHost;
@@ -81,12 +83,30 @@ public class WorldHostBedrock implements WorldHostPlugin {
             .findAny()
             .orElseThrow();
 
-        authenticationManager.load();
-        authenticationManager.save();
+        initAuthentication();
 
         LOGGER.info("Logged into Bedrock as {}", authenticationManager.getXuid());
         LOGGER.info("Java can connect to Bedrock: {}", VFP_INSTALLED);
         LOGGER.info("Bedrock can connect to Java: {}", GEYSER_INSTALLED);
+    }
+
+    private void initAuthentication() {
+        authenticationManager.load();
+        authenticationManager.save();
+
+        if (VFP_INSTALLED) {
+            final AccountsSave accountsSave = ViaFabricPlus.global().getSaveManager().getAccountsSave();
+            if (authenticationManager.getFullSession() != null && accountsSave.getBedrockAccount() == null) {
+                accountsSave.setBedrockAccount(authenticationManager.getFullSession());
+            } else if (authenticationManager.getFullSession() == null && accountsSave.getBedrockAccount() != null) {
+                try {
+                    authenticationManager.setFullSessionAndXbl(accountsSave.getBedrockAccount());
+                } catch (Exception e) {
+                    LOGGER.error("Failed to init XBL from full session", e);
+                }
+                authenticationManager.save();
+            }
+        }
     }
 
     @Override

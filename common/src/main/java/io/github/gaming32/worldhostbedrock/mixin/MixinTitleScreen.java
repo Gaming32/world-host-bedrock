@@ -27,9 +27,9 @@ public class MixinTitleScreen extends Screen {
             y += WorldHost.getMenuLineSpacing();
         }
         final AuthenticationManager authenticationManager = WorldHostBedrock.getInstance().getAuthenticationManager();
-        final var session = authenticationManager.getSession();
+        final var session = authenticationManager.getFullSession();
         final Component text = session != null
-            ? Component.translatable("world_host_bedrock.status.logged_in", session.getDisplayClaims().get("umg"))
+            ? Component.translatable("world_host_bedrock.status.logged_in", session.getMcChain().getDisplayName())
             : Component.translatable("world_host_bedrock.status.log_in");
         final int textWidth = font.width(text);
         addRenderableWidget(new PlainTextButton(
