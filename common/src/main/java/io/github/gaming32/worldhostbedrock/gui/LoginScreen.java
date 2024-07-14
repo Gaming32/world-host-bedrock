@@ -27,7 +27,7 @@ public final class LoginScreen {
             final AtomicBoolean cancelled = new AtomicBoolean();
             final AtomicReference<StepXblSisuAuthentication.XblSisuTokens> result = new AtomicReference<>();
             try {
-                result.set(AuthenticationManager.BEDROCK_XBL_DEVICE_CODE_LOGIN.getFromInput(
+                result.set(MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.getFromInput(
                     MinecraftAuth.createHttpClient(),
                     new StepMsaDeviceCode.MsaDeviceCodeCallback(deviceCode -> {
                         minecraft.execute(() -> minecraft.setScreen(new ConfirmScreen(

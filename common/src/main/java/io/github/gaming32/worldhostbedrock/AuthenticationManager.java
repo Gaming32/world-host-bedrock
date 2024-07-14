@@ -8,10 +8,7 @@ import com.google.gson.stream.JsonWriter;
 import io.github.gaming32.worldhostbedrock.util.XUID;
 import net.minecraft.Util;
 import net.raphimc.minecraftauth.MinecraftAuth;
-import net.raphimc.minecraftauth.step.AbstractStep;
 import net.raphimc.minecraftauth.step.xbl.StepXblSisuAuthentication;
-import net.raphimc.minecraftauth.util.MicrosoftConstants;
-import net.raphimc.minecraftauth.util.OAuthEnvironment;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,18 +17,6 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public final class AuthenticationManager {
-    @SuppressWarnings("unchecked")
-    public static final AbstractStep<?, StepXblSisuAuthentication.XblSisuTokens> BEDROCK_XBL_DEVICE_CODE_LOGIN = Util.make(() -> {
-        final var builder = MinecraftAuth.builder()
-            .withClientId(MicrosoftConstants.BEDROCK_ANDROID_TITLE_ID)
-            .withScope(MicrosoftConstants.SCOPE_TITLE_AUTH)
-            .withOAuthEnvironment(OAuthEnvironment.LIVE)
-            .deviceCode()
-            .withDeviceToken("Android");
-        builder.sisuTitleAuthentication(MicrosoftConstants.XBL_XSTS_RELYING_PARTY);
-        return (AbstractStep<?, StepXblSisuAuthentication.XblSisuTokens>)builder.build();
-    });
-
     private final Path authFile;
     private StepXblSisuAuthentication.XblSisuTokens session;
 
@@ -53,7 +38,7 @@ public final class AuthenticationManager {
         }
         return CompletableFuture.supplyAsync(() -> {
             try {
-                session = BEDROCK_XBL_DEVICE_CODE_LOGIN.refresh(MinecraftAuth.createHttpClient(), session);
+                session = MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.refresh(MinecraftAuth.createHttpClient(), session);
             } catch (Exception e) {
                 throw new IllegalStateException("Failed to refresh Bedrock login", e);
             }
@@ -73,13 +58,13 @@ public final class AuthenticationManager {
             return;
         }
         session = !json.equals(JsonNull.INSTANCE)
-            ? BEDROCK_XBL_DEVICE_CODE_LOGIN.fromJson(json.getAsJsonObject())
+            ? MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.fromJson(json.getAsJsonObject())
             : null;
     }
 
     public void save() {
         final JsonElement json = session != null
-            ? BEDROCK_XBL_DEVICE_CODE_LOGIN.toJson(session)
+            ? MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.toJson(session)
             : JsonNull.INSTANCE;
         try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(authFile))) {
             writer.setIndent("  ");
