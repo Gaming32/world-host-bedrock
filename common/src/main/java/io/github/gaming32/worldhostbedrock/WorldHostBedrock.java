@@ -6,9 +6,12 @@ import de.florianmichael.viafabricplus.save.impl.AccountsSave;
 import io.github.gaming32.worldhost.FriendsListUpdate;
 import io.github.gaming32.worldhost.LoadedWorldHostPlugin;
 import io.github.gaming32.worldhost.WorldHost;
+import io.github.gaming32.worldhost.plugin.FriendListFriend;
 import io.github.gaming32.worldhost.plugin.InfoTextsCategory;
 import io.github.gaming32.worldhost.plugin.OnlineFriend;
 import io.github.gaming32.worldhost.plugin.WorldHostPlugin;
+import io.github.gaming32.worldhostbedrock.impl.BedrockFriendListFriend;
+import io.github.gaming32.worldhostbedrock.impl.BedrockOnlineFriend;
 import io.github.gaming32.worldhostbedrock.xbox.XboxRequests;
 import io.github.gaming32.worldhostbedrock.xbox.models.Session;
 import net.minecraft.ChatFormatting;
@@ -20,6 +23,7 @@ import org.slf4j.Logger;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 @WorldHostPlugin.Entrypoint
 public class WorldHostBedrock implements WorldHostPlugin {
@@ -131,6 +135,19 @@ public class WorldHostBedrock implements WorldHostPlugin {
             })
             .exceptionally(t -> {
                 LOGGER.error("Failed to request online Bedrock friends", t);
+                return null;
+            });
+    }
+
+    @Override
+    public void listFriends(Consumer<FriendListFriend> friendConsumer) {
+        xboxRequests.requestSocial()
+            .thenAccept(friends -> friends.stream()
+                .map(BedrockFriendListFriend::new)
+                .forEach(friendConsumer)
+            )
+            .exceptionally(t -> {
+                LOGGER.error("Failed to request Bedrock friends list", t);
                 return null;
             });
     }
