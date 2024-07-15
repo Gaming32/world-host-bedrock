@@ -121,7 +121,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
     }
 
     @Override
-    public void refreshFriendsList() {
+    public void refreshOnlineFriends() {
         xboxRequests.requestSessions()
             .thenAcceptAsync(sessions -> {
                 for (final Session session : sessions) {
