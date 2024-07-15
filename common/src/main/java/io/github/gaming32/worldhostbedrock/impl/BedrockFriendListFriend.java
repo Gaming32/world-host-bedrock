@@ -4,7 +4,9 @@ import io.github.gaming32.worldhost.plugin.FriendListFriend;
 import io.github.gaming32.worldhost.plugin.ProfileInfo;
 import io.github.gaming32.worldhostbedrock.WorldHostBedrock;
 import io.github.gaming32.worldhostbedrock.xbox.models.Person;
+import net.minecraft.network.chat.Component;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class BedrockFriendListFriend implements FriendListFriend {
@@ -14,6 +16,16 @@ public class BedrockFriendListFriend implements FriendListFriend {
     public BedrockFriendListFriend(Person person) {
         this.person = person;
         profile = BedrockProfileInfo.create(person.xuid(), person.displayName(), person.displayPicRaw());
+    }
+
+    @Override
+    public ProfileInfo fallbackProfileInfo() {
+        return profile;
+    }
+
+    @Override
+    public CompletableFuture<ProfileInfo> profileInfo() {
+        return CompletableFuture.completedFuture(profile);
     }
 
     @Override
@@ -29,12 +41,7 @@ public class BedrockFriendListFriend implements FriendListFriend {
     }
 
     @Override
-    public ProfileInfo fallbackProfileInfo() {
-        return profile;
-    }
-
-    @Override
-    public CompletableFuture<ProfileInfo> profileInfo() {
-        return CompletableFuture.completedFuture(profile);
+    public Optional<Component> tag() {
+        return Optional.of(Component.literal("Bedrock"));
     }
 }
