@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 public class BedrockFriendAdder implements FriendAdder {
-    public static final Pattern VALID_GAMERTAG = Pattern.compile("[a-zA-Z0-9, ]{1,15}");
+    public static final Pattern VALID_GAMERTAG = Pattern.compile("^[a-zA-Z0-9, ]{1,15}$");
 
     private final XboxRequests xboxRequests;
 

@@ -15,7 +15,7 @@ public class ProfileIconRenderer implements IconRenderer {
     public ProfileIconRenderer(IconRenderer fallback, CompletableFuture<ResourceLocation> future) {
         this.fallback = fallback;
         this.future = future.exceptionally(t -> {
-            WorldHostBedrock.LOGGER.error("Failed to get future icon. Falling back to {}.", fallback, t);
+            WorldHostBedrock.LOGGER.error("Failed to get profile icon. Falling back to {}.", fallback, t);
             return null;
         });
     }
