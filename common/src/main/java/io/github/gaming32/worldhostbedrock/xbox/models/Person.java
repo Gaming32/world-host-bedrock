@@ -8,6 +8,7 @@ public record Person(
     XUID xuid,
     boolean isFollowedByCaller,
     String displayName,
-    URI displayPicRaw
+    URI displayPicRaw,
+    String gamertag
 ) {
 }

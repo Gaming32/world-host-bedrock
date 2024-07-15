@@ -23,7 +23,7 @@ public class BedrockFriendListFriend implements FriendListFriend {
             .removeFriend(person.xuid())
             .thenRun(refresher)
             .exceptionally(t -> {
-                WorldHostBedrock.LOGGER.error("Failed to remove friend {}", person.displayName(), t);
+                WorldHostBedrock.LOGGER.error("Failed to remove friend {}", person.gamertag(), t);
                 return null;
             });
     }
