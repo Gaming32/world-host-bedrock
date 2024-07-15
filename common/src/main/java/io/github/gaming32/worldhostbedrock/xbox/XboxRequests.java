@@ -30,6 +30,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -73,13 +74,14 @@ public final class XboxRequests {
                 .setPathSegments("handles", "query")
                 .addParameter("include", "customProperties")
             );
-            final HttpRequest request = HttpRequest.newBuilder(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(
-                    SESSIONS_REQUEST.formatted(WHBConstants.MINECRAFT_SCID, authenticationManager.getXuid())
-                ))
+            final HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
                 .header("User-Agent", USER_AGENT)
                 .header("x-xbl-contract-version", "107")
                 .header("Authorization", authentication)
+                .POST(HttpRequest.BodyPublishers.ofString(
+                    SESSIONS_REQUEST.formatted(WHBConstants.MINECRAFT_SCID, authenticationManager.getXuid())
+                ))
                 .build();
             return requestObjectWithArray(request, "results", Session.class);
         });
@@ -88,17 +90,18 @@ public final class XboxRequests {
     public CompletableFuture<ProfileUser> requestProfileUser(XUID xuid) {
         return authenticationManager.getAuthHeader().thenCompose(authentication -> {
             if (authentication == null) {
-                return notAuthenticated();
+                return notAuthenticatedException();
             }
             final URI uri = buildUri("https://profile.xboxlive.com", builder -> builder
                 .setPathSegments("users", "xuid(" + xuid + ")", "profile", "settings")
                 .addParameter("settings", ProfileUser.DISPLAY_NAME_SETTING + "," + ProfileUser.PROFILE_PICTURE_SETTING)
             );
-            final HttpRequest request = HttpRequest.newBuilder(uri)
-                .GET()
+            final HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
                 .header("User-Agent", USER_AGENT)
                 .header("x-xbl-contract-version", "2")
                 .header("Authorization", authentication)
+                .GET()
                 .build();
             return requestObjectWithArray(request, "profileUsers", ProfileUser.class)
                 .thenApply(users -> users
@@ -115,37 +118,79 @@ public final class XboxRequests {
             if (authentication == null) {
                 return CompletableFuture.completedFuture(List.of());
             }
-            final HttpRequest request = HttpRequest.newBuilder(SOCIAL_URI)
-                .GET()
+            final HttpRequest request = HttpRequest.newBuilder()
+                .uri(SOCIAL_URI)
                 .header("User-Agent", USER_AGENT)
-                .header("x-xbl-contract-version", "5")
+                .header("x-xbl-contract-version", "6")
                 .header("Authorization", authentication)
                 .header("Accept-Language", LocaleUtil.minecraftToXbl(LocaleUtil.getCurrent()))
+                .GET()
                 .build();
             return requestObjectWithArray(request, "people", Person.class);
+        });
+    }
+
+    public CompletableFuture<Void> addFriend(XUID xuid) {
+        return authenticationManager.getAuthHeader().thenCompose(authentication -> {
+            if (authentication == null) {
+                return notAuthenticatedException();
+            }
+            final HttpRequest request = HttpRequest.newBuilder()
+                .uri(createPeopleUri(xuid))
+                .header("Authorization", authentication)
+                .PUT(HttpRequest.BodyPublishers.noBody())
+                .build();
+            return requestNoBody(request);
         });
     }
 
     public CompletableFuture<Void> removeFriend(XUID friend) {
         return authenticationManager.getAuthHeader().thenCompose(authentication -> {
             if (authentication == null) {
-                return notAuthenticated();
+                return notAuthenticatedException();
             }
-            final URI uri = buildUri("https://social.xboxlive.com", builder -> builder
-                .setPathSegments("users", "me", "people", "xuid(" + friend + ")")
-            );
-            final HttpRequest request = HttpRequest.newBuilder(uri)
-                .DELETE()
+            final HttpRequest request = HttpRequest.newBuilder()
+                .uri(createPeopleUri(friend))
                 .header("User-Agent", USER_AGENT)
                 .header("Authorization", authentication)
+                .DELETE()
                 .build();
-            return http.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-                .thenAccept(response -> checkHttpResponse(uri, response));
+            return requestNoBody(request);
         });
     }
 
-    private static <T> CompletableFuture<T> notAuthenticated() {
+    public CompletableFuture<Optional<Person>> searchPerson(String gamertag) {
+        return authenticationManager.getAuthHeader().thenCompose(authentication -> {
+            if (authentication == null) {
+                return CompletableFuture.completedFuture(Optional.empty());
+            }
+            final URI uri = buildUri("https://peoplehub.xboxlive.com", builder -> builder
+                .setPathSegments("users", "me", "people", "search")
+                .addParameter("q", gamertag)
+                .addParameter("maxItems", "1")
+            );
+            final HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("User-Agent", USER_AGENT)
+                .header("x-xbl-contract-version", "6")
+                .header("Authorization", authentication)
+                .header("Accept-Language", LocaleUtil.minecraftToXbl(LocaleUtil.getCurrent()))
+                .GET()
+                .build();
+            return requestObjectWithArray(request, "people", Person.class)
+                .thenApply(people -> people.stream()
+                    .filter(p -> p.gamertag().equals(gamertag))
+                    .findFirst()
+                );
+        });
+    }
+
+    private static <T> CompletableFuture<T> notAuthenticatedException() {
         return CompletableFuture.failedFuture(new IllegalStateException("Not authenticated to Xbox API"));
+    }
+
+    private static URI createPeopleUri(XUID xuid) {
+        return URI.create("https://social.xboxlive.com/users/me/people/xuid(" + xuid + ")");
     }
 
     private static URI buildUri(String base, Consumer<URIBuilder> action) {
@@ -156,6 +201,11 @@ public final class XboxRequests {
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
+    }
+
+    private CompletableFuture<Void> requestNoBody(HttpRequest request) {
+        return http.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+            .thenAccept(response -> checkHttpResponse(request.uri(), response));
     }
 
     private <T> CompletableFuture<List<T>> requestObjectWithArray(
@@ -194,7 +244,10 @@ public final class XboxRequests {
         if (response.statusCode() / 100 != 2) {
             final String reason = EnglishReasonPhraseCatalog.INSTANCE.getReason(response.statusCode(), null);
             throw new IllegalStateException(
-                "Failed to request " + sourceUri.getPath() + ": " + response.statusCode() + " " + reason
+                "Failed to " + response.request().method() +
+                " " + sourceUri +
+                ": " + response.statusCode() +
+                " " + reason
             );
         }
     }

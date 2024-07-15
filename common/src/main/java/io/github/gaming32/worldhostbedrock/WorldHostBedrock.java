@@ -6,23 +6,21 @@ import de.florianmichael.viafabricplus.save.impl.AccountsSave;
 import io.github.gaming32.worldhost.FriendsListUpdate;
 import io.github.gaming32.worldhost.LoadedWorldHostPlugin;
 import io.github.gaming32.worldhost.WorldHost;
+import io.github.gaming32.worldhost.plugin.FriendAdder;
 import io.github.gaming32.worldhost.plugin.FriendListFriend;
-import io.github.gaming32.worldhost.plugin.InfoTextsCategory;
 import io.github.gaming32.worldhost.plugin.OnlineFriend;
 import io.github.gaming32.worldhost.plugin.WorldHostPlugin;
+import io.github.gaming32.worldhostbedrock.impl.BedrockFriendAdder;
 import io.github.gaming32.worldhostbedrock.impl.BedrockFriendListFriend;
 import io.github.gaming32.worldhostbedrock.impl.BedrockOnlineFriend;
 import io.github.gaming32.worldhostbedrock.xbox.XboxRequests;
 import io.github.gaming32.worldhostbedrock.xbox.models.Session;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @WorldHostPlugin.Entrypoint
@@ -33,21 +31,13 @@ public class WorldHostBedrock implements WorldHostPlugin {
     public static final boolean VFP_INSTALLED = WHBPlatform.isModLoaded("viafabricplus");
     public static final boolean GEYSER_INSTALLED = WHBPlatform.isModLoaded(WHBPlatform.getGeyserModId());
 
-    private static final List<Component> BEDROCK_FRIENDS_TEXT = List.of(Component.translatable(
-        "world_host_bedrock.friends.bedrock_notice",
-        Component.translatable("world_host_bedrock.friends.bedrock_notice.link").withStyle(s -> s
-            .applyFormat(ChatFormatting.UNDERLINE)
-            .withColor(ChatFormatting.BLUE)
-            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.xbox.com/play/search?p=1"))
-        )
-    ));
-
     private static WorldHostBedrock instance;
 
     private final Path cacheDir;
     private final AuthenticationManager authenticationManager;
     private final XboxRequests xboxRequests;
     private final BedrockIconManager bedrockIconManager;
+    private final BedrockFriendAdder friendAdder;
 
     public WorldHostBedrock() {
         final Minecraft minecraft = Minecraft.getInstance();
@@ -55,6 +45,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
         authenticationManager = new AuthenticationManager(cacheDir.resolve("auth.json"));
         xboxRequests = new XboxRequests(authenticationManager);
         bedrockIconManager = new BedrockIconManager(cacheDir.resolve("icons"));
+        friendAdder = new BedrockFriendAdder(xboxRequests);
     }
 
     public static WorldHostBedrock getInstance() {
@@ -153,10 +144,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
     }
 
     @Override
-    public List<Component> getInfoTexts(InfoTextsCategory category) {
-        return switch (category) {
-            case FRIENDS_SCREEN -> BEDROCK_FRIENDS_TEXT;
-            default -> List.of();
-        };
+    public Optional<FriendAdder> friendAdder() {
+        return Optional.of(friendAdder);
     }
 }

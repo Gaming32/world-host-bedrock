@@ -29,6 +29,18 @@ public class BedrockFriendListFriend implements FriendListFriend {
     }
 
     @Override
+    public void addFriend(boolean notify, Runnable refresher) {
+        WorldHostBedrock.getInstance()
+            .getXboxRequests()
+            .addFriend(person.xuid())
+            .thenRun(refresher)
+            .exceptionally(t -> {
+                WorldHostBedrock.LOGGER.error("Failed to add friend {}", person.gamertag(), t);
+                return null;
+            });
+    }
+
+    @Override
     public void removeFriend(Runnable refresher) {
         WorldHostBedrock.getInstance()
             .getXboxRequests()
