@@ -38,7 +38,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
         Component.translatable("world_host_bedrock.friends.bedrock_notice.link").withStyle(s -> s
             .applyFormat(ChatFormatting.UNDERLINE)
             .withColor(ChatFormatting.BLUE)
-            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://account.xbox.com/Profile"))
+            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.xbox.com/play/search?p=1"))
         )
     ));
 
