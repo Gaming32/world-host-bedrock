@@ -1,10 +1,13 @@
 package io.github.gaming32.worldhostbedrock.xbox.models;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.gaming32.worldhostbedrock.WHBPlatform;
 import io.github.gaming32.worldhostbedrock.util.WHBConstants;
 import io.github.gaming32.worldhostbedrock.util.XUID;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.raphimc.viabedrock.api.BedrockProtocolVersion;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +25,7 @@ public record Session(SessionRef sessionRef, XUID ownerXuid, CustomProperties cu
     }
 
     public record CustomProperties(
+        String hostName,
         String version,
         String worldName,
         int protocol,
@@ -30,21 +34,25 @@ public record Session(SessionRef sessionRef, XUID ownerXuid, CustomProperties cu
         @SerializedName("SupportedConnections") List<SupportedConnection> supportedConnections
     ) {
         public ServerStatus toServerStatus() {
+            final boolean isCompatibleBedrock =
+                WHBPlatform.isModLoaded("viafabricplus") &&
+                protocol == BedrockProtocolVersion.bedrockLatest.getVersion();
+            final int protocolVersion = isCompatibleBedrock ? SharedConstants.getProtocolVersion() : protocol;
             return new ServerStatus(
                 Component.literal(worldName),
-                Optional.of(new ServerStatus.Players(memberCount, maxMemberCount, List.of())),
-                Optional.of(new ServerStatus.Version(version, protocol)),
+                Optional.of(new ServerStatus.Players(maxMemberCount, memberCount, List.of())),
+                Optional.of(new ServerStatus.Version("Bedrock" + version, protocolVersion)),
                 Optional.empty(),
                 false
             );
         }
+    }
 
-        public record SupportedConnection(
-            @SerializedName("ConnectionType") int connectionType,
-            @SerializedName("HostIpAddress") String hostIpAddress,
-            @SerializedName("hostPort") int hostPort,
-            @SerializedName("WebRTCNetworkId") String webRtcNetworkId
-        ) {
-        }
+    public record SupportedConnection(
+        @SerializedName("ConnectionType") int connectionType,
+        @SerializedName("HostIpAddress") String hostIpAddress,
+        @SerializedName("HostPort") int hostPort,
+        @SerializedName("WebRTCNetworkId") String webRtcNetworkId
+    ) {
     }
 }

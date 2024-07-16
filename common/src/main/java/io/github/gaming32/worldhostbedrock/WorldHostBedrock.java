@@ -80,12 +80,12 @@ public class WorldHostBedrock implements WorldHostPlugin {
             .orElseThrow();
 
         initAuthentication();
-
         LOGGER.info("Logged into Bedrock as {}", authenticationManager.getXuid());
-        LOGGER.info("Java can connect to Bedrock: {}", VFP_INSTALLED);
-        LOGGER.info("Bedrock can connect to Java: {}", GEYSER_INSTALLED);
 
         poller.start();
+
+        LOGGER.info("Java can connect to Bedrock: {}", VFP_INSTALLED);
+        LOGGER.info("Bedrock can connect to Java: {}", GEYSER_INSTALLED);
     }
 
     private void initAuthentication() {

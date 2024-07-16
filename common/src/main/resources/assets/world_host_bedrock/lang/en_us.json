@@ -3,5 +3,7 @@
   "world_host_bedrock.status.log_in": "Click to login to Bedrock",
   "world_host_bedrock.login.title": "Bedrock Edition Login",
   "world_host_bedrock.login.message": "Your web browser should have opened with a sign in page. If it didn't, click \"Copy Link\" below and open the copied link in your web browser.",
-  "world_host_bedrock.login.copy_link": "Copy Link"
+  "world_host_bedrock.login.copy_link": "Copy Link",
+  "world_host_bedrock.join.no_vfp": "ViaFabricPlus must be installed to join Bedrock friends",
+  "world_host_bedrock.join.no_methods": "No join methods available"
 }

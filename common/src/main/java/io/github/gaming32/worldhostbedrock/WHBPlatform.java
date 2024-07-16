@@ -2,6 +2,7 @@ package io.github.gaming32.worldhostbedrock;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
 
+// TODO: Replace with WorldHost calls
 public class WHBPlatform {
     @ExpectPlatform
     public static boolean isModLoaded(String modId) {
