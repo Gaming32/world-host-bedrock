@@ -27,8 +27,12 @@ public class WorldHostBedrock implements WorldHostPlugin {
     public static final String MOD_ID = "world_host_bedrock";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final boolean VFP_INSTALLED = WHBPlatform.isModLoaded("viafabricplus");
-    public static final boolean GEYSER_INSTALLED = WHBPlatform.isModLoaded(WHBPlatform.getGeyserModId());
+    public static final boolean VFP_INSTALLED = WorldHost.isModLoaded("viafabricplus");
+    public static final boolean GEYSER_INSTALLED = WorldHost.isModLoaded(switch (WorldHost.MOD_LOADER) {
+        case FABRIC -> "geyser-fabric";
+        case NEOFORGE -> "geyser_neoforge";
+        default -> "";
+    });
 
     private static WorldHostBedrock instance;
 

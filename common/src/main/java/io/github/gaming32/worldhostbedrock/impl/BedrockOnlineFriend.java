@@ -1,7 +1,7 @@
 package io.github.gaming32.worldhostbedrock.impl;
 
+import io.github.gaming32.worldhost.WorldHost;
 import io.github.gaming32.worldhost.plugin.OnlineFriend;
-import io.github.gaming32.worldhostbedrock.WHBPlatform;
 import io.github.gaming32.worldhostbedrock.connect.BedrockConnection;
 import io.github.gaming32.worldhostbedrock.util.XUID;
 import io.github.gaming32.worldhostbedrock.xbox.models.Session;
@@ -46,7 +46,7 @@ public record BedrockOnlineFriend(
         if (connection == null) {
             return Optional.of(Component.translatable("world_host_bedrock.join.no_methods"));
         }
-        if (!WHBPlatform.isModLoaded("viafabricplus")) {
+        if (!WorldHost.isModLoaded("viafabricplus")) {
             return Optional.of(Component.translatable("world_host_bedrock.join.no_vfp"));
         }
         if (connection instanceof BedrockConnection.Unsupported unsupported) {

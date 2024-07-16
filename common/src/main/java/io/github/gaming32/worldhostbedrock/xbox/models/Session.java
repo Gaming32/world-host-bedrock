@@ -1,7 +1,7 @@
 package io.github.gaming32.worldhostbedrock.xbox.models;
 
 import com.google.gson.annotations.SerializedName;
-import io.github.gaming32.worldhostbedrock.WHBPlatform;
+import io.github.gaming32.worldhost.WorldHost;
 import io.github.gaming32.worldhostbedrock.util.WHBConstants;
 import io.github.gaming32.worldhostbedrock.util.XUID;
 import net.minecraft.SharedConstants;
@@ -35,7 +35,7 @@ public record Session(SessionRef sessionRef, XUID ownerXuid, CustomProperties cu
     ) {
         public ServerStatus toServerStatus() {
             final boolean isCompatibleBedrock =
-                WHBPlatform.isModLoaded("viafabricplus") &&
+                WorldHost.isModLoaded("viafabricplus") &&
                 protocol == BedrockProtocolVersion.bedrockLatest.getVersion();
             final int protocolVersion = isCompatibleBedrock ? SharedConstants.getProtocolVersion() : protocol;
             return new ServerStatus(

@@ -3,8 +3,8 @@ package io.github.gaming32.worldhostbedrock.xbox;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import io.github.gaming32.worldhost.WorldHost;
 import io.github.gaming32.worldhostbedrock.AuthenticationManager;
-import io.github.gaming32.worldhostbedrock.WHBPlatform;
 import io.github.gaming32.worldhostbedrock.WorldHostBedrock;
 import io.github.gaming32.worldhostbedrock.util.LocaleUtil;
 import io.github.gaming32.worldhostbedrock.util.WHBConstants;
@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class XboxRequests {
-    public static final String USER_AGENT = "World Host Bedrock/" + WHBPlatform.getModVersion(WorldHostBedrock.MOD_ID);
+    public static final String USER_AGENT = "World Host Bedrock/" + WorldHost.getModVersion(WorldHostBedrock.MOD_ID);
     private static final Gson GSON = new GsonBuilder().create();
 
     @Language("JSON")
