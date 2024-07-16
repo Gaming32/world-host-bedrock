@@ -38,6 +38,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
     private final XboxRequests xboxRequests;
     private final BedrockIconManager bedrockIconManager;
     private final BedrockFriendAdder friendAdder;
+    private final BedrockPoller poller;
 
     public WorldHostBedrock() {
         final Minecraft minecraft = Minecraft.getInstance();
@@ -46,6 +47,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
         xboxRequests = new XboxRequests(authenticationManager);
         bedrockIconManager = new BedrockIconManager(cacheDir.resolve("icons"));
         friendAdder = new BedrockFriendAdder(xboxRequests);
+        poller = new BedrockPoller(xboxRequests);
     }
 
     public static WorldHostBedrock getInstance() {
@@ -83,6 +85,8 @@ public class WorldHostBedrock implements WorldHostPlugin {
         LOGGER.info("Logged into Bedrock as {}", authenticationManager.getXuid());
         LOGGER.info("Java can connect to Bedrock: {}", VFP_INSTALLED);
         LOGGER.info("Bedrock can connect to Java: {}", GEYSER_INSTALLED);
+
+        poller.start();
     }
 
     private void initAuthentication() {
