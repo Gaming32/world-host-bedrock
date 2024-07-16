@@ -1,7 +1,8 @@
 package io.github.gaming32.worldhostbedrock;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import de.florianmichael.viafabricplus.ViaFabricPlus;
@@ -22,6 +23,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public final class AuthenticationManager {
+    private static final Gson GSON = new GsonBuilder().create();
+
     private final Path authFile;
     private StepXblSisuAuthentication.XblSisuTokens xbl;
     private StepFullBedrockSession.FullBedrockSession fullSession;
@@ -108,18 +111,22 @@ public final class AuthenticationManager {
     }
 
     public void load() {
+        xbl = null;
+        fullSession = null;
         try (JsonReader reader = new JsonReader(Files.newBufferedReader(authFile))) {
-            final JsonObject json = Streams.parse(reader).getAsJsonObject();
-            if (json.has("xbl")) {
-                xbl = MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.fromJson(json.getAsJsonObject("xbl"));
-            } else {
-                xbl = null;
+            reader.beginObject();
+            while (reader.hasNext()) {
+                switch (reader.nextName()) {
+                    case "xbl" -> xbl = MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.fromJson(
+                        GSON.fromJson(reader, JsonObject.class)
+                    );
+                    case "fullSession" -> fullSession = MinecraftAuth.BEDROCK_DEVICE_CODE_LOGIN.fromJson(
+                        GSON.fromJson(reader, JsonObject.class)
+                    );
+                    default -> reader.skipValue();
+                }
             }
-            if (json.has("fullSession")) {
-                fullSession = MinecraftAuth.BEDROCK_DEVICE_CODE_LOGIN.fromJson(json.getAsJsonObject("fullSession"));
-            } else {
-                fullSession = null;
-            }
+            reader.endObject();
         } catch (NoSuchFileException ignored) {
         } catch (Exception e) {
             WorldHostBedrock.LOGGER.error("Failed to load auth", e);
@@ -128,15 +135,16 @@ public final class AuthenticationManager {
 
     public void save() {
         try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(authFile))) {
-            final JsonObject json = new JsonObject();
+            writer.beginObject();
             if (xbl != null) {
-                json.add("xbl", MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.toJson(xbl));
+                writer.name("xbl");
+                GSON.toJson(MinecraftAuth.BEDROCK_XBL_DEVICE_CODE_LOGIN.toJson(xbl), writer);
             }
             if (fullSession != null) {
-                json.add("fullSession", MinecraftAuth.BEDROCK_DEVICE_CODE_LOGIN.toJson(fullSession));
+                writer.name("fullSession");
+                GSON.toJson(MinecraftAuth.BEDROCK_DEVICE_CODE_LOGIN.toJson(fullSession), writer);
             }
-            writer.setIndent("  ");
-            Streams.write(json, writer);
+            writer.endObject();
         } catch (Exception e) {
             WorldHostBedrock.LOGGER.error("Failed to save auth", e);
         }

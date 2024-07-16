@@ -56,7 +56,7 @@ public final class XboxRequests {
     private static final URI SOCIAL_URI = URI.create("https://peoplehub.xboxlive.com/users/me/people/social");
 
     private final HttpClient http = HttpClient.newBuilder()
-        .followRedirects(HttpClient.Redirect.ALWAYS)
+        .followRedirects(HttpClient.Redirect.NORMAL)
         .executor(Util.ioPool())
         .build();
     private final AuthenticationManager authenticationManager;
