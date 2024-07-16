@@ -26,7 +26,8 @@ public record Session(SessionRef sessionRef, XUID ownerXuid, CustomProperties cu
         String worldName,
         int protocol,
         @SerializedName("MemberCount") int memberCount,
-        @SerializedName("MaxMemberCount") int maxMemberCount
+        @SerializedName("MaxMemberCount") int maxMemberCount,
+        @SerializedName("SupportedConnections") List<SupportedConnection> supportedConnections
     ) {
         public ServerStatus toServerStatus() {
             return new ServerStatus(
@@ -36,6 +37,14 @@ public record Session(SessionRef sessionRef, XUID ownerXuid, CustomProperties cu
                 Optional.empty(),
                 false
             );
+        }
+
+        public record SupportedConnection(
+            @SerializedName("ConnectionType") int connectionType,
+            @SerializedName("HostIpAddress") String hostIpAddress,
+            @SerializedName("hostPort") int hostPort,
+            @SerializedName("WebRTCNetworkId") String webRtcNetworkId
+        ) {
         }
     }
 }

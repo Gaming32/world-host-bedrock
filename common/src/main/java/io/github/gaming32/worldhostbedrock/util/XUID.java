@@ -1,5 +1,6 @@
 package io.github.gaming32.worldhostbedrock.util;
 
+import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonReader;
@@ -35,7 +36,11 @@ public record XUID(long id) {
 
         @Override
         public XUID read(JsonReader in) throws IOException {
-            return parse(in.nextString());
+            try {
+                return parse(in.nextString());
+            } catch (NumberFormatException e) {
+                throw new JsonParseException(e);
+            }
         }
     }
 }

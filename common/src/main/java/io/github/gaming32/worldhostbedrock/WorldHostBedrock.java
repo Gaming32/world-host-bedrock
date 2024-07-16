@@ -123,7 +123,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
                     WorldHost.ONLINE_FRIENDS.put(session.ownerXuid().toUuid(), new BedrockOnlineFriend(session));
                     WorldHost.ONLINE_FRIEND_UPDATES.forEach(FriendsListUpdate::friendsListUpdate);
                 }
-            })
+            }, Minecraft.getInstance())
             .exceptionally(t -> {
                 LOGGER.error("Failed to request online Bedrock friends", t);
                 return null;
