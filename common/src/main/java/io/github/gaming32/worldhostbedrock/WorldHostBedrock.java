@@ -3,7 +3,6 @@ package io.github.gaming32.worldhostbedrock;
 import com.mojang.logging.LogUtils;
 import de.florianmichael.viafabricplus.ViaFabricPlus;
 import de.florianmichael.viafabricplus.save.impl.AccountsSave;
-import io.github.gaming32.worldhost.FriendsListUpdate;
 import io.github.gaming32.worldhost.LoadedWorldHostPlugin;
 import io.github.gaming32.worldhost.WorldHost;
 import io.github.gaming32.worldhost.plugin.FriendAdder;
@@ -124,8 +123,7 @@ public class WorldHostBedrock implements WorldHostPlugin {
         xboxRequests.requestSessions()
             .thenAcceptAsync(sessions -> {
                 for (final Session session : sessions) {
-                    WorldHost.ONLINE_FRIENDS.put(session.ownerXuid().toUuid(), new BedrockOnlineFriend(session));
-                    WorldHost.ONLINE_FRIEND_UPDATES.forEach(FriendsListUpdate::friendsListUpdate);
+                    WorldHost.friendWentOnline(new BedrockOnlineFriend(session));
                 }
             }, Minecraft.getInstance())
             .exceptionally(t -> {

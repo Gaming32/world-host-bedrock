@@ -58,21 +58,22 @@ public final class BedrockPoller implements AutoCloseable {
 
     private void updateSessions(List<Session> sessions) {
         final Set<XUID> sessionXuids = sessions.stream().map(Session::ownerXuid).collect(Collectors.toSet());
-        boolean hasUpdate = WorldHost.ONLINE_FRIENDS.values().removeIf(friend ->
+        boolean needsManualUpdate = WorldHost.ONLINE_FRIENDS.values().removeIf(friend ->
             friend instanceof BedrockOnlineFriend bedrockFriend && !sessionXuids.contains(bedrockFriend.xuid())
         );
 
         for (final Session session : sessions) {
             final UUID sessionUuid = session.ownerXuid().toUuid();
             final OnlineFriend oldFriend = WorldHost.ONLINE_FRIENDS.get(sessionUuid);
-            if (!(oldFriend instanceof BedrockOnlineFriend oldBedrock) || !session.equals(oldBedrock.session())) {
-                hasUpdate = true;
+            if (!(oldFriend instanceof BedrockOnlineFriend oldBedrock)) {
+                needsManualUpdate = false;
+                WorldHost.friendWentOnline(new BedrockOnlineFriend(session));
+            } else if (!session.equals(oldBedrock.session())) {
                 WorldHost.ONLINE_FRIENDS.put(sessionUuid, new BedrockOnlineFriend(session));
             }
         }
 
-        if (hasUpdate) {
-            WorldHostBedrock.LOGGER.info("Bedrock sessions updated");
+        if (needsManualUpdate) {
             WorldHost.ONLINE_FRIEND_UPDATES.forEach(FriendsListUpdate::friendsListUpdate);
         }
     }
