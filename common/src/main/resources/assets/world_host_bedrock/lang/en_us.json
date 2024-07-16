@@ -5,5 +5,6 @@
   "world_host_bedrock.login.message": "Your web browser should have opened with a sign in page. If it didn't, click \"Copy Link\" below and open the copied link in your web browser.",
   "world_host_bedrock.login.copy_link": "Copy Link",
   "world_host_bedrock.join.no_vfp": "ViaFabricPlus must be installed to join Bedrock friends",
-  "world_host_bedrock.join.no_methods": "No join methods available"
+  "world_host_bedrock.join.no_methods": "No join methods available",
+  "world_host_bedrock.join.vb_in_alpha": "ViaBedrock is in alpha. Many game features may not work. Please lookup \"ViaBedrock\" on Google, and check the Features section of the GitHub page to see what features are currently working."
 }
