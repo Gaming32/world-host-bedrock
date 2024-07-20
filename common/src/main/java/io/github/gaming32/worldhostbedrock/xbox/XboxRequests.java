@@ -30,7 +30,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -159,15 +158,15 @@ public final class XboxRequests {
         });
     }
 
-    public CompletableFuture<Optional<Person>> searchPerson(String gamertag) {
+    public CompletableFuture<List<Person>> searchPeople(String gamertag, int maxResults) {
         return authenticationManager.getAuthHeader().thenCompose(authentication -> {
             if (authentication == null) {
-                return CompletableFuture.completedFuture(Optional.empty());
+                return CompletableFuture.completedFuture(List.of());
             }
             final URI uri = buildUri("https://peoplehub.xboxlive.com", builder -> builder
                 .setPathSegments("users", "me", "people", "search")
                 .addParameter("q", gamertag)
-                .addParameter("maxItems", "1")
+                .addParameter("maxItems", Integer.toString(maxResults))
             );
             final HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -177,11 +176,7 @@ public final class XboxRequests {
                 .header("Accept-Language", LocaleUtil.minecraftToXbl(LocaleUtil.getCurrent()))
                 .GET()
                 .build();
-            return requestObjectWithArray(request, "people", Person.class)
-                .thenApply(people -> people.stream()
-                    .filter(p -> p.gamertag().equals(gamertag))
-                    .findFirst()
-                );
+            return requestObjectWithArray(request, "people", Person.class);
         });
     }
 

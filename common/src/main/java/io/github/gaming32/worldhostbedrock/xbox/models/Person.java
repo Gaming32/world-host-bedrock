@@ -9,6 +9,7 @@ public record Person(
     boolean isFollowedByCaller,
     String displayName,
     URI displayPicRaw,
+    String uniqueModernGamertag,
     String gamertag
 ) {
 }

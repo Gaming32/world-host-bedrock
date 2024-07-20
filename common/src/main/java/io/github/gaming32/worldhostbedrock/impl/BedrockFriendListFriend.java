@@ -6,6 +6,7 @@ import io.github.gaming32.worldhostbedrock.WorldHostBedrock;
 import io.github.gaming32.worldhostbedrock.xbox.models.Person;
 import net.minecraft.network.chat.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,7 +16,11 @@ public class BedrockFriendListFriend implements FriendListFriend {
 
     public BedrockFriendListFriend(Person person) {
         this.person = person;
-        profile = BedrockProfileInfo.create(person.xuid(), person.displayName(), person.displayPicRaw());
+        profile = BedrockProfileInfo.create(
+            person.xuid(),
+            Objects.requireNonNullElse(person.displayName(), person.uniqueModernGamertag()),
+            person.displayPicRaw()
+        );
     }
 
     @Override

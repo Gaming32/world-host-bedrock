@@ -5,13 +5,9 @@ import io.github.gaming32.worldhost.plugin.FriendListFriend;
 import io.github.gaming32.worldhostbedrock.xbox.XboxRequests;
 import net.minecraft.network.chat.Component;
 
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Pattern;
+import java.util.function.Consumer;
 
 public class BedrockFriendAdder implements FriendAdder {
-    public static final Pattern VALID_GAMERTAG = Pattern.compile("^[a-zA-Z0-9, ]{1,15}$");
-
     private final XboxRequests xboxRequests;
 
     public BedrockFriendAdder(XboxRequests xboxRequests) {
@@ -24,16 +20,14 @@ public class BedrockFriendAdder implements FriendAdder {
     }
 
     @Override
-    public CompletableFuture<Optional<FriendListFriend>> resolveFriend(String name) {
-        if (!VALID_GAMERTAG.matcher(name).matches()) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-        return xboxRequests.searchPerson(name)
-            .thenApply(p -> p.map(BedrockFriendListFriend::new));
+    public void searchFriends(String name, int maxResults, Consumer<FriendListFriend> friendConsumer) {
+        if (name.isBlank()) return;
+        xboxRequests.searchPeople(name, maxResults)
+            .thenAccept(p -> p.stream().map(BedrockFriendListFriend::new).forEach(friendConsumer));
     }
 
     @Override
-    public boolean rateLimit(String name) {
-        return true;
+    public boolean delayLookup(String name) {
+        return !name.isBlank();
     }
 }
