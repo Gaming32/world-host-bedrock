@@ -4,6 +4,8 @@ import io.github.gaming32.worldhost.plugin.FriendListFriend;
 import io.github.gaming32.worldhost.plugin.ProfileInfo;
 import io.github.gaming32.worldhostbedrock.WorldHostBedrock;
 import io.github.gaming32.worldhostbedrock.xbox.models.Person;
+import net.minecraft.Util;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
@@ -55,6 +57,11 @@ public class BedrockFriendListFriend implements FriendListFriend {
                 WorldHostBedrock.LOGGER.error("Failed to remove friend {}", person.gamertag(), t);
                 return null;
             });
+    }
+
+    @Override
+    public void showFriendInfo(Screen parentScreen) {
+        Util.getPlatform().openUri("https://www.xbox.com/play/user/" + person.gamertag());
     }
 
     @Override
